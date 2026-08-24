@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design token test page</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* ============================================================
+     Token test page — visual chrome.
+
+     Aesthetic: a precision instrument. Editorial serif display type
+     against a monospace data voice, generous rules, restrained colour.
+     The page is a measuring device, so nothing decorative competes
+     with the specimens being measured.
+
+     Every token reference below carries a literal fallback, so a
+     broken token set still renders a page that explains the breakage.
+     No webfonts: AGENTS.md forbids third-party dependencies, so the
+     personality comes from carefully built local stacks.
+     ============================================================ */
+
+  /* Page-chrome typography, deliberately independent of the tokens
+     under test. Suffixed --pg- so it can never collide with a
+     discovered token name in any project this page is dropped into. */
+  :root {
+    --pg-display: "Iowan Old Style", "Palatino Linotype", Palatino,
+                  "Hoefler Text", Charter, Georgia, serif;
+    --pg-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo,
+               "Roboto Mono", monospace;
+
+    /* Type scale, 1.25 ratio, rem-based so browser zoom is respected. */
+    --pg-xs: 0.6875rem;   /* 11px  micro labels          */
+    --pg-sm: 0.8125rem;   /* 13px  captions, values      */
+    --pg-md: 0.9375rem;   /* 15px  body                  */
+    --pg-lg: 1.375rem;    /* 22px  section headings      */
+    --pg-xl: 2.5rem;      /* 40px  page title            */
+
+    --pg-rule: color-mix(in srgb, currentColor 14%, transparent);
+    --pg-rule-strong: color-mix(in srgb, currentColor 32%, transparent);
+    --pg-dim: color-mix(in srgb, currentColor 62%, transparent);
+    --pg-faint: color-mix(in srgb, currentColor 6%, transparent);
+
+    --pg-gutter: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    padding: 0 var(--pg-gutter) 8rem;
+    background: var(--background-page, #fdfdfc);
+    color: var(--foreground-default-primary, #16151a);
+    font-family: var(--pg-mono);
+    font-size: var(--pg-md);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-kerning: normal;
+  }
+
+  .wrap { max-width: 74rem; margin: 0 auto; }
+
+  /* ---------- masthead ---------- */
+  header.page-head {
+    padding: clamp(3rem, 9vw, 6rem) 0 1.75rem;
+    margin-bottom: 3.5rem;
+    border-bottom: 2px solid var(--pg-rule-strong);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.5rem 2rem;
+    align-items: end;
+  }
+
+  h1 {
+    font-family: var(--pg-display);
+    font-size: var(--pg-xl);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  /* Hanging index number, the instrument-panel cue. */
+  h1::before {
+    content: "01";
+    display: block;
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    letter-spacing: 0.28em;
+    color: var(--pg-dim);
+    margin-bottom: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sub {
+    font-size: var(--pg-sm);
+    line-height: 1.55;
+    color: var(--pg-dim);
+    margin: 0;
+    max-width: 58ch;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 5rem; scroll-margin-top: 2rem; }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--pg-rule);
+  }
+
+  h2 {
+    font-family: var(--pg-display);
+    font-size: var(--pg-lg);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+    margin: 0;
+    flex: 1 1 auto;
+  }
+  /* Section numerals, assigned in document order. */
+  .sec-head::before {
+    counter-increment: sec;
+    content: counter(sec, decimal-leading-zero);
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    letter-spacing: 0.2em;
+    color: var(--pg-dim);
+    font-variant-numeric: tabular-nums;
+    padding-top: 0.25rem;
+  }
+  main { counter-reset: sec; }
+
+  .count {
+    font-size: var(--pg-xs);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--pg-dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .group-label {
+    font-size: var(--pg-xs);
+    font-weight: 500;
+    letter-spacing: 0.19em;
+    text-transform: uppercase;
+    color: var(--pg-dim);
+    margin: 2.25rem 0 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+  .group-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--pg-rule);
+  }
+  .group-label:first-of-type { margin-top: 0; }
+
+  /* ---------- swatches ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 1px;
+    background: var(--pg-rule);
+    border: 1px solid var(--pg-rule);
+  }
+
+  /* Contiguous hairline grid: cells share rules instead of floating apart. */
+  .swatch {
+    background: var(--background-page, #fff);
+    display: flex;
+    flex-direction: column;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1);
+  }
+  .swatch:hover { transform: translateY(-2px); position: relative; z-index: 2; }
+
+  .swatch .chip {
+    height: 4.5rem;
+    background-color: #fff;
+    background-image:
+      linear-gradient(45deg, rgba(0,0,0,.11) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.11) 75%),
+      linear-gradient(45deg, rgba(0,0,0,.11) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.11) 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 5px 5px;
+    position: relative;
+  }
+  .swatch .chip::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--chip);
+  }
+
+  .swatch .meta {
+    padding: 0.6rem 0.7rem 0.65rem;
+    border-top: 1px solid var(--pg-rule);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+  .name {
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+  .val {
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    color: var(--pg-dim);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- semantic pairs ---------- */
+  .pairs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1px;
+    background: var(--pg-rule);
+    border: 1px solid var(--pg-rule);
+  }
+  .pair {
+    padding: 1.1rem 1.15rem 0.95rem;
+    min-height: 8.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .pair .demo {
+    font-family: var(--pg-display);
+    font-size: 1.5rem;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    flex: 1 1 auto;
+  }
+  .pair .tokens {
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    line-height: 1.5;
+    opacity: .74;
+    overflow-wrap: anywhere;
+  }
+  .pair .flags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+  }
+  .pair .flag {
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    padding: 0.1rem 0.4rem;
+    opacity: .68;
+    letter-spacing: 0.03em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .pair .flag[data-warn="1"] {
+    opacity: 1;
+    font-weight: 700;
+    border-width: 1.5px;
+  }
+
+  /* ---------- typography specimens ---------- */
+  .type-row {
+    display: grid;
+    grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
+    gap: 1.5rem 2rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--pg-rule);
+    align-items: baseline;
+  }
+  .type-row:last-child { border-bottom: 0; }
+  .type-specs {
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    line-height: 1.65;
+    color: var(--pg-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .type-specs .tname {
+    display: block;
+    color: var(--foreground-default-primary, #111);
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+    overflow-wrap: anywhere;
+  }
+  .type-specimen { min-width: 0; overflow-wrap: anywhere; }
+
+  /* ---------- dimensions ---------- */
+  .dim-row { display: flex; flex-wrap: wrap; gap: 1.75rem; align-items: flex-start; }
+  .dim-demo {
+    background: var(--pg-faint);
+    border: 1px dashed var(--pg-rule-strong);
+    min-width: 8.5rem;
+  }
+  .dim-inner {
+    background: var(--background-brand-subtle, rgba(0,0,0,.06));
+    color: var(--foreground-brand-primary, inherit);
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    text-align: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .dim-cap {
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    line-height: 1.6;
+    color: var(--pg-dim);
+    margin-top: 0.6rem;
+    white-space: pre-line;
+  }
+
+  /* ---------- shadow ---------- */
+  .shadow-card {
+    background: var(--background-base, #fff);
+    border-radius: var(--radius-base, 4px);
+    padding: 1.5rem 1.6rem;
+    max-width: 22rem;
+    font-family: var(--pg-mono);
+    font-size: var(--pg-sm);
+    border: 1px solid var(--pg-rule);
+  }
+
+  /* ---------- component demos ---------- */
+  .cmp { max-width: 38rem; }
+  .cmp details {
+    border: var(--border-width, 1px) solid;
+    border-radius: var(--radius-base, 4px);
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+  }
+  .cmp summary {
+    list-style: none;
+    cursor: pointer;
+    padding: var(--padding-loose, 12px);
+    font-family: var(--typography-body-strong-font-family, var(--pg-mono));
+    font-size: var(--typography-body-strong-font-size, var(--pg-md));
+    font-weight: var(--typography-body-strong-font-weight, 600);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+  }
+  .cmp summary::-webkit-details-marker { display: none; }
+  .cmp summary::after {
+    content: "";
+    width: 0.5rem; height: 0.5rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform .2s ease;
+    opacity: .65;
+    flex: none;
+  }
+  .cmp details[open] summary::after {
+    transform: rotate(225deg) translate(-2px, -2px);
+  }
+  .cmp .body {
+    padding: var(--padding-loose, 12px);
+    font-size: var(--typography-body-font-size, var(--pg-md));
+    line-height: var(--typography-body-line-height, 1.55);
+    border-top: var(--border-width, 1px) solid;
+  }
+  .cmp .hint {
+    font-size: var(--pg-xs);
+    letter-spacing: 0.04em;
+    color: var(--pg-dim);
+    margin: 0 0 0.85rem;
+  }
+
+  /* ---------- theme switcher ---------- */
+  .switcher {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    border: 1px solid var(--pg-rule-strong);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .switcher button {
+    font-family: var(--pg-mono);
+    font-size: var(--pg-xs);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    border: 0;
+    border-right: 1px solid var(--pg-rule-strong);
+    background: transparent;
+    color: var(--pg-dim);
+    transition: background .15s ease, color .15s ease;
+  }
+  .switcher button:last-child { border-right: 0; }
+  .switcher button:hover { background: var(--pg-faint); color: inherit; }
+  .switcher button[aria-pressed="true"] {
+    background: var(--foreground-default-primary, #111);
+    color: var(--background-page, #fff);
+  }
+  .switcher button:focus-visible {
+    outline: 2px solid var(--background-brand-pop, #2e7bbe);
+    outline-offset: -2px;
+  }
+
+  /* ---------- notes ---------- */
+  .note {
+    border: 1px solid var(--pg-rule);
+    border-left: 2px solid currentColor;
+    padding: 1rem 1.15rem;
+    font-family: var(--pg-mono);
+    font-size: var(--pg-sm);
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    max-width: 62ch;
+  }
+  .note strong { font-weight: 700; }
+  .note code {
+    font-family: var(--pg-mono);
+    background: var(--pg-faint);
+    padding: 0.05em 0.35em;
+    border-radius: 2px;
+  }
+  .note[hidden] { display: none; }
+
+  /* Staggered reveal: one orchestrated load, no per-element fidgeting. */
+  @media (prefers-reduced-motion: no-preference) {
+    section, header.page-head {
+      animation: rise .5s cubic-bezier(.2,.7,.3,1) backwards;
+    }
+    header.page-head { animation-delay: .02s; }
+    section:nth-of-type(1) { animation-delay: .06s; }
+    section:nth-of-type(2) { animation-delay: .10s; }
+    section:nth-of-type(3) { animation-delay: .14s; }
+    section:nth-of-type(4) { animation-delay: .18s; }
+    section:nth-of-type(5) { animation-delay: .22s; }
+    section:nth-of-type(6) { animation-delay: .26s; }
+    section:nth-of-type(n+7) { animation-delay: .30s; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 40rem) {
+    header.page-head { grid-template-columns: 1fr; }
+    .type-row { grid-template-columns: 1fr; gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div>
+      <h1>Design token test page</h1>
+      <p class="sub" id="summary">Reading tokens…</p>
+    </div>
+    <div class="switcher" id="switcher" hidden></div>
+  </header>
+
+  <div class="note err" id="load-error" hidden></div>
+
+  <main id="out"></main>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TOKENS_HREF = "tokens.css";
+
+  /* ---------- token structure (settled at build time) ----------
+     Chrome blocks BOTH ways of reading a stylesheet's source under file://:
+     fetch() is refused by CORS, and sheet.cssRules throws once the sheet was
+     loaded from a file:// URL. Selector text — which is where the theme names
+     live — is therefore unreadable at runtime in the common case of opening
+     this page straight off disk.
+
+     So the two halves of the problem are separated:
+
+       structure  (which properties, which blocks, which themes exist)
+                  -> settled below, read from tokens.css when this page was
+                     generated. Regenerate the page if the token file gains
+                     or loses properties.
+
+       values     (what each property currently resolves to)
+                  -> always read live, at runtime, from the real cascade via
+                     getComputedStyle on the <link rel="stylesheet"> in <head>.
+                     Nothing here is a cached copy of a value.
+
+     The authored `value` strings below are kept only because downstream code
+     distinguishes a primitive from an alias by testing for a leading `var(`,
+     which a computed value can never show. Every value actually displayed is
+     the live computed one. */
+  var TOKEN_STRUCTURE = [
+    { selector: ":root", decls: [
+      { name: "--white-10", value: "#ffffff1a" },
+      { name: "--white-25", value: "#ffffff40" },
+      { name: "--white-40", value: "#ffffff66" },
+      { name: "--white-50", value: "#ffffff80" },
+      { name: "--white-60", value: "#ffffff99" },
+      { name: "--white-70", value: "#ffffffb2" },
+      { name: "--white-85", value: "#ffffffd9" },
+      { name: "--white", value: "#ffffff" },
+      { name: "--black-10", value: "#0000001a" },
+      { name: "--black-25", value: "#00000040" },
+      { name: "--black-40", value: "#00000066" },
+      { name: "--black-50", value: "#00000080" },
+      { name: "--black-60", value: "#00000099" },
+      { name: "--black-70", value: "#000000b2" },
+      { name: "--grey-100", value: "#efefef" },
+      { name: "--grey-200", value: "#cfcfcf" },
+      { name: "--grey-300", value: "#a8a8a8" },
+      { name: "--grey-400", value: "#949494" },
+      { name: "--grey-500", value: "#767272" },
+      { name: "--grey-600", value: "#4e4e4e" },
+      { name: "--grey-700", value: "#2a2a2a" },
+      { name: "--grey-800", value: "#141414" },
+      { name: "--brand-100", value: "#eff3f6" },
+      { name: "--brand-200", value: "#c2cbd3" },
+      { name: "--brand-300", value: "#8eadc9" },
+      { name: "--brand-400", value: "#6492bb" },
+      { name: "--brand-500", value: "#2e7bbe" },
+      { name: "--brand-600", value: "#245783" },
+      { name: "--brand-700", value: "#082032" },
+      { name: "--brand-800", value: "#051828" },
+      { name: "--orange-100", value: "#f6f2ef" },
+      { name: "--orange-200", value: "#d5ccc5" },
+      { name: "--orange-300", value: "#caac83" },
+      { name: "--orange-400", value: "#b38549" },
+      { name: "--orange-500", value: "#a46718" },
+      { name: "--orange-600", value: "#a46514" },
+      { name: "--orange-700", value: "#37260f" },
+      { name: "--orange-800", value: "#1f1202" },
+      { name: "--red-100", value: "#f6f0ef" },
+      { name: "--red-200", value: "#d8c9c7" },
+      { name: "--red-300", value: "#cb928d" },
+      { name: "--red-400", value: "#cf776f" },
+      { name: "--red-500", value: "#c5473b" },
+      { name: "--red-600", value: "#9a3229" },
+      { name: "--red-700", value: "#39100c" },
+      { name: "--red-800", value: "#270705" },
+      { name: "--green-100", value: "#eff6f0" },
+      { name: "--green-200", value: "#c5d6c8" },
+      { name: "--green-300", value: "#83b28b" },
+      { name: "--green-400", value: "#4f9e5c" },
+      { name: "--green-500", value: "#238433" },
+      { name: "--green-600", value: "#257232" },
+      { name: "--green-700", value: "#0b3012" },
+      { name: "--green-800", value: "#07240c" },
+      { name: "--typography-heading-large-font-family", value: "\"Google Sans Flex\"" },
+      { name: "--typography-heading-large-font-weight", value: "500" },
+      { name: "--typography-heading-large-font-size", value: "24px" },
+      { name: "--typography-heading-large-line-height", value: "26.4px" },
+      { name: "--typography-heading-large-letter-spacing", value: "-0.25px" },
+      { name: "--typography-heading-font-family", value: "\"Google Sans Flex\"" },
+      { name: "--typography-heading-font-weight", value: "500" },
+      { name: "--typography-heading-font-size", value: "20px" },
+      { name: "--typography-heading-line-height", value: "22px" },
+      { name: "--typography-heading-letter-spacing", value: "-0.25px" },
+      { name: "--typography-body-font-family", value: "\"Google Sans Flex\"" },
+      { name: "--typography-body-font-weight", value: "400" },
+      { name: "--typography-body-font-size", value: "16px" },
+      { name: "--typography-body-line-height", value: "20.8px" },
+      { name: "--typography-body-letter-spacing", value: "0" },
+      { name: "--typography-body-strong-font-family", value: "\"Google Sans Flex\"" },
+      { name: "--typography-body-strong-font-weight", value: "500" },
+      { name: "--typography-body-strong-font-size", value: "16px" },
+      { name: "--typography-body-strong-line-height", value: "20.8px" },
+      { name: "--typography-body-strong-letter-spacing", value: "0" },
+      { name: "--typography-body-small-font-family", value: "\"Google Sans Flex\"" },
+      { name: "--typography-body-small-font-weight", value: "400" },
+      { name: "--typography-body-small-font-size", value: "12px" },
+      { name: "--typography-body-small-line-height", value: "15.6px" },
+      { name: "--typography-body-small-letter-spacing", value: "0" },
+      { name: "--typography-body-small-strong-font-family", value: "\"Google Sans Flex\"" },
+      { name: "--typography-body-small-strong-font-weight", value: "500" },
+      { name: "--typography-body-small-strong-font-size", value: "12px" },
+      { name: "--typography-body-small-strong-line-height", value: "15.6px" },
+      { name: "--typography-body-small-strong-letter-spacing", value: "0" },
+      { name: "--border-width", value: "0.5px" },
+      { name: "--radius-base", value: "8px" },
+      { name: "--padding-base", value: "8px" },
+      { name: "--padding-loose", value: "12px" },
+      { name: "--shadow-lift-x", value: "0px" },
+      { name: "--shadow-lift-y", value: "2px" },
+      { name: "--shadow-lift-blur", value: "4px" },
+      { name: "--shadow-lift-spread", value: "0px" },
+    ] },
+    { selector: ":root, [data-theme=\"light\"]", decls: [
+      { name: "--background-page", value: "var(--white)" },
+      { name: "--background-base", value: "var(--white)" },
+      { name: "--background-brand-subtle", value: "var(--brand-100)" },
+      { name: "--background-brand-muted", value: "var(--brand-200)" },
+      { name: "--background-brand-strong", value: "var(--brand-300)" },
+      { name: "--background-brand-pop", value: "var(--brand-500)" },
+      { name: "--background-positive-subtle", value: "var(--green-100)" },
+      { name: "--background-positive-muted", value: "var(--green-200)" },
+      { name: "--background-positive-strong", value: "var(--green-300)" },
+      { name: "--background-positive-pop", value: "var(--green-500)" },
+      { name: "--background-negative-subtle", value: "var(--red-100)" },
+      { name: "--background-negative-muted", value: "var(--red-200)" },
+      { name: "--background-negative-strong", value: "var(--red-300)" },
+      { name: "--background-negative-pop", value: "var(--red-500)" },
+      { name: "--background-warning-subtle", value: "var(--orange-100)" },
+      { name: "--background-warning-muted", value: "var(--orange-200)" },
+      { name: "--background-warning-strong", value: "var(--orange-300)" },
+      { name: "--background-warning-pop", value: "var(--orange-500)" },
+      { name: "--border-base", value: "var(--grey-400)" },
+      { name: "--border-brand", value: "var(--brand-400)" },
+      { name: "--foreground-default-primary", value: "var(--grey-800)" },
+      { name: "--foreground-default-secondary", value: "var(--grey-700)" },
+      { name: "--foreground-brand-primary", value: "var(--brand-800)" },
+      { name: "--foreground-brand-secondary", value: "var(--brand-700)" },
+      { name: "--shadow-lift-color", value: "var(--black-10)" },
+      { name: "--shadow-lift", value: "var(--shadow-lift-x) var(--shadow-lift-y) var(--shadow-lift-blur) var(--shadow-lift-spread) var(--shadow-lift-color)" },
+      { name: "--component-accordion-background", value: "var(--white)" },
+      { name: "--component-accordion-background-active", value: "var(--brand-100)" },
+      { name: "--component-accordion-background-section", value: "var(--brand-100)" },
+      { name: "--component-accordion-foreground", value: "var(--brand-800)" },
+      { name: "--component-accordion-foreground-active", value: "var(--brand-800)" },
+      { name: "--component-accordion-border", value: "var(--grey-400)" },
+      { name: "--component-accordion-border-active", value: "var(--brand-400)" },
+    ] },
+    { selector: "[data-theme=\"dark\"]", decls: [
+      { name: "--background-page", value: "var(--grey-800)" },
+      { name: "--background-base", value: "var(--grey-700)" },
+      { name: "--background-brand-subtle", value: "var(--brand-800)" },
+      { name: "--background-brand-muted", value: "var(--brand-700)" },
+      { name: "--background-brand-strong", value: "var(--brand-600)" },
+      { name: "--background-brand-pop", value: "var(--brand-500)" },
+      { name: "--background-positive-subtle", value: "var(--green-800)" },
+      { name: "--background-positive-muted", value: "var(--green-700)" },
+      { name: "--background-positive-strong", value: "var(--green-600)" },
+      { name: "--background-positive-pop", value: "var(--green-500)" },
+      { name: "--background-negative-subtle", value: "var(--red-800)" },
+      { name: "--background-negative-muted", value: "var(--red-700)" },
+      { name: "--background-negative-strong", value: "var(--red-600)" },
+      { name: "--background-negative-pop", value: "var(--red-500)" },
+      { name: "--background-warning-subtle", value: "var(--orange-800)" },
+      { name: "--background-warning-muted", value: "var(--orange-700)" },
+      { name: "--background-warning-strong", value: "var(--orange-600)" },
+      { name: "--background-warning-pop", value: "var(--orange-500)" },
+      { name: "--border-base", value: "var(--grey-600)" },
+      { name: "--border-brand", value: "var(--brand-600)" },
+      { name: "--foreground-default-primary", value: "var(--grey-100)" },
+      { name: "--foreground-default-secondary", value: "var(--grey-200)" },
+      { name: "--foreground-brand-primary", value: "var(--brand-100)" },
+      { name: "--foreground-brand-secondary", value: "var(--brand-200)" },
+      { name: "--shadow-lift-color", value: "var(--black-10)" },
+      { name: "--shadow-lift", value: "var(--shadow-lift-x) var(--shadow-lift-y) var(--shadow-lift-blur) var(--shadow-lift-spread) var(--shadow-lift-color)" },
+      { name: "--component-accordion-background", value: "var(--grey-700)" },
+      { name: "--component-accordion-background-active", value: "var(--brand-200)" },
+      { name: "--component-accordion-background-section", value: "var(--grey-700)" },
+      { name: "--component-accordion-foreground", value: "var(--grey-100)" },
+      { name: "--component-accordion-foreground-active", value: "var(--brand-800)" },
+      { name: "--component-accordion-border", value: "var(--brand-400)" },
+      { name: "--component-accordion-border-active", value: "var(--brand-300)" },
+    ] },
+  ];
+
+  /* ---------- live values ----------
+     Read every declared property off the element the cascade applies to, so
+     the active theme, and any user override, is reflected. */
+  function readComputed(names) {
+    var cs = getComputedStyle(document.documentElement);
+    var out = {};
+    for (var i = 0; i < names.length; i++) {
+      var v = cs.getPropertyValue(names[i]);
+      if (v != null) {
+        v = String(v).trim().replace(/\s+/g, " ");
+        if (v !== "") out[names[i]] = v;
+      }
+    }
+    return out;
+  }
+
+  /* Confirm the stylesheet under test is actually applying, rather than
+     silently reporting an empty set as if every token were missing. */
+  function stylesheetIsLive(structure) {
+    var names = [];
+    structure.forEach(function (b) {
+      b.decls.forEach(function (d) { if (names.length < 40) names.push(d.name); });
+    });
+    var got = readComputed(names);
+    return Object.keys(got).length > 0;
+  }
+
+  /* ---------- assemble ----------
+     Produces exactly the shape the old parse() returned — an array of
+     { selector, decls: [{ name, value }] } — so build(), the classification
+     logic and the rendering are all untouched. `value` is the live computed
+     value wherever one exists, falling back to the authored string for a
+     property the browser does not expose (an unsupported value, or one the
+     cascade has dropped). */
+  function collect() {
+    var names = [];
+    TOKEN_STRUCTURE.forEach(function (b) {
+      b.decls.forEach(function (d) { names.push(d.name); });
+    });
+    var live = readComputed(names);
+
+    return TOKEN_STRUCTURE.map(function (b) {
+      return {
+        selector: b.selector,
+        decls: b.decls.map(function (d) {
+          var has = Object.prototype.hasOwnProperty.call(live, d.name);
+          /* Two fields, deliberately:
+
+               value    — the authored text. An alias keeps its `var(...)`
+                          form, because that is how downstream code tells a
+                          semantic token from a primitive.
+               computed — what the property resolves to right now, in the
+                          theme that is currently applied.
+
+             Keeping both matters: resolving the authored chain by hand would
+             always reproduce the first block's values, so a themed token
+             would print its light value while its swatch painted the dark
+             one. resolve() prefers `computed` and never walks the chain. */
+          return {
+            name: d.name,
+            value: /^var\(/.test(d.value) || !has ? d.value : live[d.name],
+            computed: has ? live[d.name] : null
+          };
+        })
+      };
+    });
+  }
+
+  /* ---------- themes ----------
+     Only build a switcher if the file actually declares [data-theme="..."]. */
+  function findThemes(blocks) {
+    var names = [], seen = {};
+    blocks.forEach(function (b) {
+      var re = /\[data-theme=["']?([^"'\]]+)["']?\]/g, m;
+      while ((m = re.exec(b.selector)) !== null) {
+        if (!seen[m[1]]) { seen[m[1]] = 1; names.push(m[1]); }
+      }
+    });
+    return names;
+  }
+
+  /* ---------- value classification, by format not by name ---------- */
+  var HEX = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+  var FUNC_COLOR = /^(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\(/i;
+  var DIMEN = /^-?[\d.]+(px|rem|em|%)$/;
+
+  function isColorValue(v) {
+    if (HEX.test(v) || FUNC_COLOR.test(v)) return true;
+    return /^(transparent|currentcolor)$/i.test(v);
+  }
+  function isDimenValue(v) { return DIMEN.test(v); }
+
+  /* Resolve var() chains against the primitive map to classify aliases. */
+  function resolve(value, map, depth) {
+    depth = depth || 0;
+    if (depth > 12) return value;
+    var m = /^var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,([\s\S]*))?\)$/.exec(value.trim());
+    if (!m) return value;
+    if (Object.prototype.hasOwnProperty.call(map, m[1])) {
+      return resolve(map[m[1]], map, depth + 1);
+    }
+    return m[2] ? resolve(m[2].trim(), map, depth + 1) : value;
+  }
+
+  /* ---------- grouping helpers ---------- */
+  var TYPO_SUFFIXES = ["font-family", "font-size", "font-weight", "line-height", "letter-spacing"];
+
+  function typoSuffix(name) {
+    for (var i = 0; i < TYPO_SUFFIXES.length; i++) {
+      var s = "-" + TYPO_SUFFIXES[i];
+      if (name.length > s.length && name.slice(-s.length) === s) return TYPO_SUFFIXES[i];
+    }
+    return null;
+  }
+
+  /* A type style = a prefix carrying >= 2 distinct typographic suffixes. */
+  function findTypeStyles(decls) {
+    var byPrefix = {}, order = [];
+    decls.forEach(function (d) {
+      var suf = typoSuffix(d.name);
+      if (!suf) return;
+      var prefix = d.name.slice(0, d.name.length - suf.length - 1);
+      if (!byPrefix[prefix]) { byPrefix[prefix] = {}; order.push(prefix); }
+      byPrefix[prefix][suf] = d.name;
+    });
+    return order
+      .filter(function (p) { return Object.keys(byPrefix[p]).length >= 2; })
+      .map(function (p) { return { prefix: p, parts: byPrefix[p] }; });
+  }
+
+  /* Primitive colour scales grouped by leading category segment. */
+  function groupScales(colorDecls) {
+    var groups = {}, order = [];
+    colorDecls.forEach(function (d) {
+      var body = d.name.replace(/^--/, "");
+      var seg = body.split("-")[0];
+      if (!groups[seg]) { groups[seg] = []; order.push(seg); }
+      groups[seg].push(d);
+    });
+    return order.map(function (k) { return { name: k, items: groups[k] }; });
+  }
+
+  /* Component tokens: --component-{name}-{property...} */
+  function groupComponents(decls) {
+    var comps = {}, order = [];
+    decls.forEach(function (d) {
+      var m = /^--component-([a-z0-9]+)-(.+)$/i.exec(d.name);
+      if (!m) return;
+      if (!comps[m[1]]) { comps[m[1]] = []; order.push(m[1]); }
+      comps[m[1]].push({ name: d.name, prop: m[2], value: d.value });
+    });
+    return order.map(function (k) { return { name: k, tokens: comps[k] }; });
+  }
+
+  /* Pair each background token with the closest foreground token, matching
+     on the most shared leading segments (intent), longest match wins. */
+  function pairSemantics(decls) {
+    var bgs = [], fgs = [];
+    decls.forEach(function (d) {
+      if (/^--background-/.test(d.name)) bgs.push(d);
+      else if (/^--foreground-/.test(d.name)) fgs.push(d);
+    });
+    if (!fgs.length) return [];
+    return bgs.map(function (bg) {
+      var bgSegs = bg.name.replace(/^--background-/, "").split("-");
+      var best = null, bestScore = -1;
+      fgs.forEach(function (fg) {
+        var fgSegs = fg.name.replace(/^--foreground-/, "").split("-");
+        var score = 0;
+        for (var i = 0; i < Math.min(bgSegs.length, fgSegs.length); i++) {
+          if (bgSegs[i] === fgSegs[i]) score++; else break;
+        }
+        if (score > bestScore) { bestScore = score; best = fg; }
+      });
+      return { bg: bg, fg: best, matched: bestScore > 0 };
+    });
+  }
+
+  /* ---------- contrast ----------
+     Reported so a semantic pairing can be judged, not just seen. Alpha is
+     composited over white, which is an approximation, so ratios on
+     translucent colours are indicative rather than authoritative. */
+  function toRgb(v) {
+    var s = String(v).trim();
+    var m = /^#([0-9a-f]{3,8})$/i.exec(s);
+    if (m) {
+      var h = m[1];
+      if (h.length === 3 || h.length === 4) {
+        h = h.split("").map(function (c) { return c + c; }).join("");
+      }
+      if (h.length !== 6 && h.length !== 8) return null;
+      var r = parseInt(h.slice(0, 2), 16),
+          g = parseInt(h.slice(2, 4), 16),
+          b = parseInt(h.slice(4, 6), 16),
+          a = h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1;
+      return [r, g, b, a];
+    }
+    m = /^rgba?\(([^)]+)\)$/i.exec(s);
+    if (m) {
+      var p = m[1].split(/[,\/\s]+/).filter(Boolean).map(parseFloat);
+      if (p.length < 3 || p.some(isNaN)) return null;
+      return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    }
+    return null;
+  }
+
+  function relLum(rgb) {
+    var c = rgb.slice(0, 3).map(function (v) {
+      v = v / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+
+  function contrast(fg, bg) {
+    var f = toRgb(fg), b = toRgb(bg);
+    if (!f || !b) return null;
+    /* Composite any alpha over an opaque backdrop before comparing. */
+    function flat(x, under) {
+      if (x[3] >= 1) return x;
+      return [
+        x[0] * x[3] + under[0] * (1 - x[3]),
+        x[1] * x[3] + under[1] * (1 - x[3]),
+        x[2] * x[3] + under[2] * (1 - x[3]),
+        1
+      ];
+    }
+    var white = [255, 255, 255, 1];
+    b = flat(b, white);
+    f = flat(f, b);
+    var l1 = relLum(f), l2 = relLum(b);
+    var hi = Math.max(l1, l2), lo = Math.min(l1, l2);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  /* ---------- font availability ----------
+     A token can be perfectly wired and still render in a fallback face if the
+     family is not installed and no webfont is loaded. Measuring the rendered
+     width against a known-missing family tells the two cases apart, so the
+     type section cannot silently look correct while showing the wrong font. */
+  function fontAvailable(family) {
+    var first = String(family).split(",")[0].trim().replace(/^["']|["']$/g, "");
+    if (!first) return true;
+    if (/^(system-ui|sans-serif|serif|monospace|cursive|fantasy|ui-\w+)$/i.test(first)) return true;
+    try {
+      if (document.fonts && typeof document.fonts.check === "function") {
+        if (document.fonts.check("16px '" + first.replace(/'/g, "") + "'")) return true;
+      }
+    } catch (e) { /* fall through to measurement */ }
+
+    var c = document.createElement("canvas").getContext("2d");
+    if (!c) return true;
+    var sample = "MMMWWWiii0123mmmlll";
+    function widthWith(stack) { c.font = "72px " + stack; return c.measureText(sample).width; }
+    /* A nonsense family forces the generic fallback metric. */
+    var base = widthWith("'__pg_missing__', monospace");
+    var test = widthWith("'" + first.replace(/'/g, "") + "', monospace");
+    return Math.abs(test - base) > 0.5;
+  }
+
+  /* ---------- rendering ---------- */
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function section(title, count) {
+    var s = el("section");
+    var h = el("div", "sec-head");
+    h.appendChild(el("h2", null, title));
+    if (count != null) h.appendChild(el("span", "count", count + (count === 1 ? " token" : " tokens")));
+    s.appendChild(h);
+    return s;
+  }
+
+  function swatch(d, resolved) {
+    var w = el("div", "swatch");
+    var chip = el("div", "chip");
+    /* Painted via --chip on a ::after layer so the checkerboard shows through
+       translucent values instead of being covered by them. */
+    chip.style.setProperty("--chip", "var(" + d.name + ")");
+    var meta = el("div", "meta");
+    meta.appendChild(el("code", "name", d.name));
+    var v = el("code", "val", resolved);
+    /* Tagged so the printed value can be re-read live when the theme changes;
+       the chip itself repaints on its own because it references var(). */
+    v.setAttribute("data-live", d.name);
+    meta.appendChild(v);
+    w.appendChild(chip);
+    w.appendChild(meta);
+    return w;
+  }
+
+  /* Re-read every printed value from the live cascade. Without this the hex
+     labels would keep showing whichever theme was active when they were
+     built, while the swatch beside them repainted — the exact kind of
+     silent mismatch this page exists to catch. */
+  function refreshValues() {
+    var cs = getComputedStyle(document.documentElement);
+    Array.prototype.forEach.call(document.querySelectorAll("[data-live]"), function (node) {
+      var v = cs.getPropertyValue(node.getAttribute("data-live"));
+      if (v != null) {
+        v = String(v).trim().replace(/\s+/g, " ");
+        if (v !== "") node.textContent = v;
+      }
+    });
+  }
+
+  /* Recompute contrast badges from resolved values in the *active* theme. */
+  function refreshContrast() {
+    var cs = getComputedStyle(document.documentElement);
+    Array.prototype.forEach.call(document.querySelectorAll("[data-bg][data-fg]"), function (node) {
+      var bg = cs.getPropertyValue(node.getAttribute("data-bg")).trim();
+      var fg = cs.getPropertyValue(node.getAttribute("data-fg")).trim();
+      var ratio = contrast(fg, bg);
+      if (ratio == null) { node.textContent = "contrast n/a"; return; }
+      var r = Math.round(ratio * 100) / 100;
+      var level = ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : ratio >= 3 ? "AA LG" : "FAIL";
+      node.textContent = r.toFixed(2) + ":1 " + level;
+      /* Below AA is emphasised by the stylesheet via [data-warn]. */
+      if (ratio >= 4.5) node.removeAttribute("data-warn");
+      else node.setAttribute("data-warn", "1");
+    });
+  }
+
+  function build(blocks) {
+    var out = document.getElementById("out");
+
+    /* Flatten declarations, de-duped by name, first occurrence wins order. */
+    var all = [], seen = {}, valueMap = {};
+    blocks.forEach(function (b) {
+      b.decls.forEach(function (d) {
+        /* Seed the map with the LIVE computed value where the browser gave
+           one, so resolve() short-circuits on the first lookup instead of
+           walking the authored var() chain — which would always reproduce
+           the first block's theme. Authored text is the fallback only for
+           properties the browser did not expose. */
+        if (!Object.prototype.hasOwnProperty.call(valueMap, d.name)) {
+          valueMap[d.name] = d.computed != null ? d.computed : d.value;
+        }
+        if (!seen[d.name]) { seen[d.name] = 1; all.push(d); }
+      });
+    });
+
+    var themes = findThemes(blocks);
+    var typeStyles = findTypeStyles(all);
+    var typoNames = {};
+    typeStyles.forEach(function (t) {
+      Object.keys(t.parts).forEach(function (k) { typoNames[t.parts[k]] = 1; });
+    });
+
+    var components = groupComponents(all);
+    var componentNames = {};
+    components.forEach(function (c) {
+      c.tokens.forEach(function (t) { componentNames[t.name] = 1; });
+    });
+
+    /* Classify the remainder. */
+    var primColors = [], semColors = [], dimens = [], shadowPieces = [], shadowComposites = [];
+
+    all.forEach(function (d) {
+      if (typoNames[d.name] || componentNames[d.name]) return;
+      var isAlias = /^var\(/.test(d.value);
+      var resolved = resolve(d.value, valueMap);
+      var isShadowName = /shadow/i.test(d.name);
+
+      if (isShadowName) {
+        /* Composite = references two or more other custom properties. */
+        var refs = d.value.match(/var\(\s*--/g);
+        if (refs && refs.length >= 2) { shadowComposites.push(d); return; }
+        shadowPieces.push(d);
+        return;
+      }
+      if (isColorValue(resolved)) {
+        (isAlias ? semColors : primColors).push(d);
+        return;
+      }
+      if (isDimenValue(resolved)) { dimens.push(d); return; }
+    });
+
+    /* --- summary line --- */
+    document.getElementById("summary").textContent =
+      all.length + " custom properties from " + TOKENS_HREF + " · " +
+      blocks.length + " selector blocks · " +
+      (themes.length ? themes.length + " themes (" + themes.join(", ") + ")" : "single theme");
+
+    /* --- theme switcher, only if the file declares themes --- */
+    if (themes.length) {
+      var sw = document.getElementById("switcher");
+      sw.hidden = false;
+      sw.appendChild(el("span", "sub", "Theme:"));
+      var applied = null;
+      themes.forEach(function (name) {
+        var btn = el("button", null, name);
+        btn.setAttribute("aria-pressed", "false");
+        btn.addEventListener("click", function () {
+          document.documentElement.setAttribute("data-theme", name);
+          Array.prototype.forEach.call(sw.querySelectorAll("button"), function (b) {
+            b.setAttribute("aria-pressed", String(b === btn));
+          });
+          refreshValues();
+          refreshContrast();
+        });
+        sw.appendChild(btn);
+        if (!applied) { applied = btn; }
+      });
+      /* Activate the first declared theme so the page starts in a known state. */
+      applied.click();
+    }
+
+    /* --- primitive colour scales --- */
+    if (primColors.length) {
+      var s1 = section("Primitive colours", primColors.length);
+      groupScales(primColors).forEach(function (g) {
+        s1.appendChild(el("div", "group-label", g.name));
+        var grid = el("div", "grid");
+        g.items.forEach(function (d) {
+          grid.appendChild(swatch(d, resolve(d.value, valueMap)));
+        });
+        s1.appendChild(grid);
+      });
+      out.appendChild(s1);
+    }
+
+    /* --- semantic colours, bg paired with nearest fg --- */
+    if (semColors.length) {
+      var s2 = section("Semantic colours", semColors.length);
+      var pairs = pairSemantics(semColors);
+
+      if (pairs.length) {
+        s2.appendChild(el("div", "group-label", "background × foreground"));
+        var pg = el("div", "pairs");
+        pairs.forEach(function (p) {
+          var card = el("div", "pair");
+          card.style.background = "var(" + p.bg.name + ")";
+          if (p.fg) card.style.color = "var(" + p.fg.name + ")";
+          card.style.borderColor = "var(--border-base, #ccc)";
+          card.appendChild(el("div", "demo", "Sample text 123"));
+          var t = el("div", "tokens");
+          t.textContent = p.bg.name + (p.fg ? "\n" + p.fg.name : "");
+          t.style.whiteSpace = "pre-line";
+          card.appendChild(t);
+
+          /* Flags expose *why* this pairing was chosen, and whether it reads. */
+          var flags = el("div", "flags");
+          if (!p.matched && p.fg) {
+            var f1 = el("span", "flag", "no matching intent");
+            f1.title = "No --foreground-* token shares this background's intent; " +
+                       "falling back to the nearest default foreground.";
+            flags.appendChild(f1);
+          }
+          if (p.fg) {
+            var cr = el("span", "flag", "contrast …");
+            cr.setAttribute("data-bg", p.bg.name);
+            cr.setAttribute("data-fg", p.fg.name);
+            flags.appendChild(cr);
+          }
+          card.appendChild(flags);
+          pg.appendChild(card);
+        });
+        s2.appendChild(pg);
+      }
+
+      /* Any semantic colour not used as a background above, shown as swatches. */
+      var pairedBg = {};
+      pairs.forEach(function (p) { pairedBg[p.bg.name] = 1; });
+      var rest = semColors.filter(function (d) { return !pairedBg[d.name]; });
+      if (rest.length) {
+        s2.appendChild(el("div", "group-label", "other semantic tokens"));
+        var rg = el("div", "grid");
+        rest.forEach(function (d) { rg.appendChild(swatch(d, resolve(d.value, valueMap))); });
+        s2.appendChild(rg);
+      }
+      out.appendChild(s2);
+    }
+
+    /* --- typography --- */
+    if (typeStyles.length) {
+      var typoCount = 0;
+      typeStyles.forEach(function (t) { typoCount += Object.keys(t.parts).length; });
+      var s3 = section("Typography", typoCount);
+
+      /* Warn once per missing family, before the specimens. */
+      var missing = {}, missingList = [];
+      typeStyles.forEach(function (t) {
+        if (!t.parts["font-family"]) return;
+        var fam = resolve(valueMap[t.parts["font-family"]], valueMap);
+        var first = String(fam).split(",")[0].trim().replace(/^["']|["']$/g, "");
+        if (!missing[first] && !fontAvailable(fam)) {
+          missing[first] = 1;
+          missingList.push(first);
+        }
+      });
+      if (missingList.length) {
+        var warn = el("div", "note");
+        warn.innerHTML = "<strong>Not rendering in the intended face.</strong><br>" +
+          missingList.map(function (f) { return "<code>" + f + "</code>"; }).join(", ") +
+          (missingList.length === 1 ? " is" : " are") +
+          " not installed locally and no webfont is loaded, so the specimens below " +
+          "fall back to another family. The token itself is wired correctly — this is " +
+          "a font availability issue, not a token issue.";
+        s3.appendChild(warn);
+      }
+
+      typeStyles.forEach(function (t) {
+        var row = el("div", "type-row");
+
+        var specs = el("div", "type-specs");
+        specs.appendChild(el("span", "tname", t.prefix.replace(/^--/, "")));
+        Object.keys(t.parts).forEach(function (k) {
+          var line = el("div", null, k.replace("font-", "") + " " +
+                        resolve(valueMap[t.parts[k]], valueMap));
+          specs.appendChild(line);
+        });
+        row.appendChild(specs);
+
+        var line = el("div", "type-specimen",
+          "The quick brown fox jumps over the lazy dog 0123456789");
+        if (t.parts["font-family"])    line.style.fontFamily    = "var(" + t.parts["font-family"] + ")";
+        if (t.parts["font-size"])      line.style.fontSize      = "var(" + t.parts["font-size"] + ")";
+        if (t.parts["font-weight"])    line.style.fontWeight    = "var(" + t.parts["font-weight"] + ")";
+        if (t.parts["line-height"])    line.style.lineHeight    = "var(" + t.parts["line-height"] + ")";
+        if (t.parts["letter-spacing"]) line.style.letterSpacing = "var(" + t.parts["letter-spacing"] + ")";
+        row.appendChild(line);
+        s3.appendChild(row);
+      });
+      out.appendChild(s3);
+    }
+
+    /* --- dimensions: one combined demo box --- */
+    if (dimens.length) {
+      var s4 = section("Spacing, radius & border", dimens.length);
+      var pad = dimens.filter(function (d) { return /padding|space|gap/i.test(d.name); });
+      var rad = dimens.filter(function (d) { return /radius/i.test(d.name); });
+      var bor = dimens.filter(function (d) { return /border|width|stroke/i.test(d.name); });
+      var used = {};
+      [pad, rad, bor].forEach(function (a) { a.forEach(function (d) { used[d.name] = 1; }); });
+
+      var row = el("div", "dim-row");
+      /* Combine each padding with each radius/border so every token is exercised. */
+      var padList = pad.length ? pad : [null];
+      padList.forEach(function (p) {
+        var box = el("div");
+        var demo = el("div", "dim-demo");
+        if (p) demo.style.padding = "var(" + p.name + ")";
+        if (rad.length) demo.style.borderRadius = "var(" + rad[0].name + ")";
+        if (bor.length) {
+          demo.style.borderWidth = "var(" + bor[0].name + ")";
+          demo.style.borderStyle = "solid";
+          demo.style.borderColor = "var(--border-base, #999)";
+        }
+        var inner = el("div", "dim-inner", "content");
+        inner.style.padding = "10px 6px";
+        if (rad.length) inner.style.borderRadius = "calc(var(" + rad[0].name + ") / 2)";
+        demo.appendChild(inner);
+        box.appendChild(demo);
+        var caps = [];
+        if (p) caps.push("padding: " + p.name);
+        if (rad.length) caps.push("radius: " + rad[0].name);
+        if (bor.length) caps.push("border: " + bor[0].name);
+        box.appendChild(el("div", "dim-cap", caps.join("\n")));
+        box.querySelector(".dim-cap").style.whiteSpace = "pre-line";
+        row.appendChild(box);
+      });
+      s4.appendChild(row);
+
+      /* Any dimension token not covered by the demos above. */
+      var leftovers = dimens.filter(function (d) { return !used[d.name]; });
+      if (leftovers.length) {
+        s4.appendChild(el("div", "group-label", "other dimension tokens"));
+        var lg = el("div", "grid");
+        leftovers.forEach(function (d) {
+          var c = el("div", "swatch");
+          var meta = el("div", "meta");
+          meta.appendChild(el("code", "name", d.name));
+          meta.appendChild(el("code", "val", resolve(d.value, valueMap)));
+          c.appendChild(meta);
+          lg.appendChild(c);
+        });
+        s4.appendChild(lg);
+      }
+      out.appendChild(s4);
+    }
+
+    /* --- shadow --- */
+    if (shadowComposites.length || shadowPieces.length) {
+      var s5 = section("Shadow", shadowComposites.length + shadowPieces.length);
+      if (shadowComposites.length) {
+        shadowComposites.forEach(function (d) {
+          var card = el("div", "shadow-card");
+          card.style.boxShadow = "var(" + d.name + ")";
+          card.style.marginBottom = "1rem";
+          card.textContent = d.name;
+          s5.appendChild(card);
+        });
+      }
+      if (shadowPieces.length) {
+        s5.appendChild(el("div", "group-label", "component pieces"));
+        var sg = el("div", "grid");
+        shadowPieces.forEach(function (d) {
+          var isCol = isColorValue(resolve(d.value, valueMap));
+          if (isCol) { sg.appendChild(swatch(d, resolve(d.value, valueMap))); return; }
+          var c = el("div", "swatch");
+          var meta = el("div", "meta");
+          meta.appendChild(el("code", "name", d.name));
+          meta.appendChild(el("code", "val", resolve(d.value, valueMap)));
+          c.appendChild(meta);
+          sg.appendChild(c);
+        });
+        s5.appendChild(sg);
+      }
+      out.appendChild(s5);
+    }
+
+    /* --- components --- */
+    if (components.length) {
+      var total = 0;
+      components.forEach(function (c) { total += c.tokens.length; });
+      var s6 = section("Components", total);
+
+      components.forEach(function (c) {
+        s6.appendChild(el("div", "group-label", c.name));
+
+        var byProp = {};
+        c.tokens.forEach(function (t) { byProp[t.prop] = t.name; });
+
+        /* Distinguish base properties from their stateful variants. */
+        var states = {};
+        Object.keys(byProp).forEach(function (prop) {
+          var m = /^(.*)-(active|hover|focus|pressed|selected|open|disabled)$/.exec(prop);
+          if (m) { states[m[2]] = 1; }
+        });
+        var stateNames = Object.keys(states);
+
+        var wrap = el("div", "cmp");
+        var hint = el("p", "hint");
+        hint.textContent = stateNames.length
+          ? "Open an item to apply the “" + stateNames.join("/") + "” tokens."
+          : "Rendered from this component’s own tokens.";
+        wrap.appendChild(hint);
+
+        /* Build one closed and one state-bearing instance. */
+        [false, true].forEach(function (openState) {
+          if (openState && !stateNames.length) return;
+          var st = stateNames[0];
+          var det = document.createElement("details");
+          if (openState) det.open = true;
+
+          function pick(base) {
+            if (openState && st && byProp[base + "-" + st]) return byProp[base + "-" + st];
+            return byProp[base] || null;
+          }
+          var bgTok = pick("background");
+          var fgTok = pick("foreground");
+          var bdTok = pick("border");
+
+          if (bdTok) det.style.borderColor = "var(" + bdTok + ")";
+          else det.style.borderColor = "var(--border-base, #ccc)";
+
+          var sum = document.createElement("summary");
+          sum.textContent = c.name + (openState ? " · " + st : " · default");
+          if (bgTok) sum.style.background = "var(" + bgTok + ")";
+          if (fgTok) sum.style.color = "var(" + fgTok + ")";
+
+          var body = el("div", "body");
+          if (byProp["background-section"]) {
+            body.style.background = "var(" + byProp["background-section"] + ")";
+          } else if (byProp["background"]) {
+            body.style.background = "var(" + byProp["background"] + ")";
+          }
+          if (byProp["foreground"]) body.style.color = "var(" + byProp["foreground"] + ")";
+          if (bdTok) body.style.borderTopColor = "var(" + bdTok + ")";
+          body.textContent = "Body content rendered with " +
+            (byProp["background-section"] ? "background-section" : "background") + ".";
+
+          det.appendChild(sum);
+          det.appendChild(body);
+          wrap.appendChild(det);
+        });
+        s6.appendChild(wrap);
+
+        /* Full token list for this component, so nothing is hidden by state. */
+        var grid = el("div", "grid");
+        c.tokens.forEach(function (t) {
+          var r = resolve(t.value, valueMap);
+          if (isColorValue(r)) grid.appendChild(swatch({ name: t.name, value: t.value }, r));
+          else {
+            var box = el("div", "swatch");
+            var meta = el("div", "meta");
+            meta.appendChild(el("code", "name", t.name));
+            meta.appendChild(el("code", "val", r));
+            box.appendChild(meta);
+            grid.appendChild(box);
+          }
+        });
+        s6.appendChild(grid);
+      });
+      out.appendChild(s6);
+    }
+
+    /* --- anything left unclassified, so no token goes unshown --- */
+    var shown = {};
+    [primColors, semColors, dimens, shadowPieces, shadowComposites].forEach(function (arr) {
+      arr.forEach(function (d) { shown[d.name] = 1; });
+    });
+    Object.keys(typoNames).forEach(function (n) { shown[n] = 1; });
+    Object.keys(componentNames).forEach(function (n) { shown[n] = 1; });
+
+    var unclassified = all.filter(function (d) { return !shown[d.name]; });
+    if (unclassified.length) {
+      var s7 = section("Other tokens", unclassified.length);
+      var g = el("div", "grid");
+      unclassified.forEach(function (d) {
+        var box = el("div", "swatch");
+        var meta = el("div", "meta");
+        meta.appendChild(el("code", "name", d.name));
+        meta.appendChild(el("code", "val", resolve(d.value, valueMap)));
+        box.appendChild(meta);
+        g.appendChild(box);
+      });
+      s7.appendChild(g);
+      out.appendChild(s7);
+    }
+
+    /* Values and badges are appended above; fill them in once the DOM is
+       complete, reading whichever theme ended up active. */
+    refreshValues();
+    refreshContrast();
+  }
+
+  /* ---------- boot ----------
+     No network request and no stylesheet-source read, so this runs the same
+     way from file:// as it does over http. */
+  function start() {
+    try {
+      if (!TOKEN_STRUCTURE.length) throw new Error("empty");
+
+      if (!stylesheetIsLive(TOKEN_STRUCTURE)) {
+        var box = document.getElementById("load-error");
+        box.hidden = false;
+        box.innerHTML =
+          "<strong>No token values are reaching this page.</strong><br>" +
+          "The structure below was read from <code>" + TOKENS_HREF + "</code>, but none of " +
+          "those custom properties currently resolve, so <code>" + TOKENS_HREF + "</code> is " +
+          "most likely missing, renamed, or failing to load. Check that it sits next to this " +
+          "file and that the <code>&lt;link rel=\"stylesheet\"&gt;</code> in this page's " +
+          "<code>&lt;head&gt;</code> points at it.";
+      }
+
+      build(collect());
+    } catch (err) {
+      var box2 = document.getElementById("load-error");
+      box2.hidden = false;
+      box2.textContent = "Could not build the token report: " + (err && err.message);
+      document.getElementById("summary").textContent = "Failed to read tokens.";
+    }
+  }
+
+  /* Wait for the stylesheet to apply before taking any measurement. */
+  if (document.readyState === "complete") start();
+  else window.addEventListener("load", start);
+})();
+</script>
+</body>
+</html>
